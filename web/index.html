@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SmartRouteVRP</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <div class="row">
+    <div class="segmented" id="problem" role="radiogroup" aria-label="Problema"></div>
+    <label class="toggle">
+      <input type="checkbox" id="osrm" checked>
+      <span>OSRM</span>
+    </label>
+  </div>
+  <div class="row">
+    <div class="segmented" id="algorithm" role="radiogroup" aria-label="Algoritmo"></div>
+  </div>
+</header>
+
+<main>
+  <div id="map"></div>
+  <aside id="results" hidden>
+    <table>
+      <thead>
+        <tr><th>Algoritmo</th><th>Costo</th><th>Rutas</th><th>Estado</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </aside>
+</main>
+
+<footer>
+  <button id="load" disabled>Cargar</button>
+  <button id="solve" disabled>Resolver</button>
+  <span id="status" role="status">Iniciando…</span>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
