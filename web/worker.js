@@ -4,6 +4,7 @@ const { loadPyodide } = await import(`https://cdn.jsdelivr.net/pyodide/v${PYODID
 
 let pyodide = null;
 let webapp = null;
+let proto = null;
 
 async function init() {
   postMessage({ type: "status", text: "Descargando Python (Pyodide)…" });
@@ -20,6 +21,7 @@ async function init() {
   }
 
   webapp = pyodide.pyimport("webapp");
+  proto = pyodide.pyimport("prototype_som_trace"); // PROTOTYPE: SOM teaching view
   postMessage({ type: "ready", python: pyodide.runPython("import sys; sys.version.split()[0]") });
 }
 
@@ -33,7 +35,8 @@ onmessage = async ({ data }) => {
 
   try {
     await ready;
-    const result = JSON.parse(webapp[method](...args));
+    const module = method.startsWith("proto_") ? proto : webapp;
+    const result = JSON.parse(module[method](...args));
     postMessage({ type: "result", id, result });
   } catch (err) {
     postMessage({ type: "result", id, error: String(err.message || err) });

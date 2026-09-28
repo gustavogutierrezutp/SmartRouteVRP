@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prototipo SOM</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="style.css">
+<style>
+  #proto-banner { display: flex; flex-direction: column; gap: 2px; font-size: 13px; }
+  #proto-banner span { color: var(--muted); }
+</style>
+</head>
+<body data-proto="som">
+<!-- PROTOTYPE — throwaway page for co-author evaluation. Branch prototype/som-teaching only. -->
+<header>
+  <div id="proto-banner">
+    <b>Prototipo · Vista de enseñanza del SOM (mapa autoorganizado)</b>
+    <span>Tres variantes para evaluar: cambie entre A, B y C con la barra negra inferior o las flechas ← →.
+    ¿Cuál enseña mejor el algoritmo? ¿Qué tomaría de cada una?</span>
+  </div>
+  <div class="row" hidden style="display:none">
+    <div class="segmented" id="problem" role="radiogroup" aria-label="Problema"></div>
+    <label class="toggle">
+      <input type="checkbox" id="osrm" checked>
+      <span>OSRM</span>
+    </label>
+  </div>
+  <div class="row" hidden style="display:none">
+    <div class="segmented" id="algorithm" role="radiogroup" aria-label="Algoritmo"></div>
+  </div>
+</header>
+
+<main>
+  <div id="map"></div>
+  <aside id="results" hidden>
+    <table>
+      <thead>
+        <tr><th>Algoritmo</th><th>Costo</th><th>Rutas</th><th>Estado</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </aside>
+</main>
+
+<footer>
+  <button id="load" disabled>Cargar</button>
+  <button id="solve" disabled>Resolver</button>
+  <span id="status" role="status">Iniciando…</span>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="app.js"></script>
+<script src="prototype-som.js"></script>
+</body>
+</html>

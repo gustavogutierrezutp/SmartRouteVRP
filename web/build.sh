@@ -9,11 +9,12 @@ out="${1:-$root/_site}"
 rm -rf "$out"
 mkdir -p "$out"
 
-cp "$root"/web/index.html "$root"/web/app.js "$root"/web/worker.js "$root"/web/style.css "$out"/
-cp "$root"/web/py/webapp.py "$out"/
+cp "$root"/web/*.html "$root"/web/*.js "$root"/web/*.css "$out"/
+cp "$root"/web/py/*.py "$out"/
 
 cd "$root"
-files=(webapp.py)
+files=()
+for f in web/py/*.py; do files+=("$(basename "$f")"); done
 
 for f in algorithms/*.py models/*.py routing/*.py data/*.csv; do
   mkdir -p "$out/$(dirname "$f")"
