@@ -22,7 +22,17 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
       - run: bash web/build.sh _site
+      # Throwaway prototypes live on prototype/* branches, never on main.
+      # Publish each one under prototypes/<name>/ for evaluation.
+      - name: Build prototype branches
+        run: |
+          for name in $(git for-each-ref --format='%(refname:strip=4)' refs/remotes/origin/prototype/); do
+            git worktree add --detach "$RUNNER_TEMP/proto-$name" "origin/prototype/$name"
+            bash "$RUNNER_TEMP/proto-$name/web/build.sh" "$PWD/_site/prototypes/$name"
+          done
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
         with:
