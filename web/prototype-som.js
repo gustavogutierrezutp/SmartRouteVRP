@@ -87,13 +87,13 @@
       set speed(v) { speed = v; },
       async play() {
         if (playing) return;
-        playing = true;
+        playing = som.playing = true;
         while (playing && !som.snap.done) {
           const { n, delay } = SPEEDS[speed];
           onFrame(await som.step(n));
           await new Promise((r) => setTimeout(r, delay));
         }
-        playing = false;
+        playing = som.playing = false;
         onFrame(som.snap);
       },
       pause() { playing = false; },
@@ -112,16 +112,36 @@
     return `rgb(${Math.round(200 + 55 * a)}, ${Math.round(200 - 90 * a)}, ${Math.round(200 - 180 * a)})`;
   }
 
+  const road = {
+    on: true,
+    cache: new Map(),
+    path(tour) {
+      const key = tour.join(",");
+      if (!this.cache.has(key)) {
+        this.cache.set(key, call("proto_route_geometry", JSON.stringify(tour)).then((r) => r.path));
+      }
+      return this.cache.get(key);
+    },
+  };
+
   function draw(snap, opt = {}) {
     layer.clearLayers();
     const pts = byId();
     const neurons = opt.useBefore && snap.last ? snap.last.before : snap.neurons;
     const last = snap.last;
 
-    if (opt.tour !== false && (opt.tour === "solid" || opt.tour === "dashed")) {
-      L.polyline(snap.tour.map((id) => [pts[id].lat, pts[id].lon]), {
-        color: "#34c759", weight: opt.tour === "solid" ? 4 : 2, dashArray: opt.tour === "dashed" ? "6 6" : null, renderer,
-      }).addTo(layer);
+    if (opt.tour === "solid" || opt.tour === "dashed") {
+      const style = { color: "#34c759", weight: opt.tour === "solid" ? 4 : 2, dashArray: opt.tour === "dashed" ? "6 6" : null, renderer };
+      const straight = L.polyline(snap.tour.map((id) => [pts[id].lat, pts[id].lon]), style).addTo(layer);
+
+      // Road geometry only while the route is stable (not during playback): OSRM demo is rate-limited.
+      if (road.on && !som.playing) {
+        road.path(snap.tour).then((path) => {
+          if (som.snap !== snap || !layer.hasLayer(straight)) return; // a newer frame was drawn meanwhile
+          layer.removeLayer(straight);
+          L.polyline(path, style).addTo(layer).bringToBack();
+        }).catch(() => {});
+      }
     }
 
     L.polyline([...neurons, neurons[0]], { color: "#5e5ce6", weight: 2, opacity: 0.9, renderer }).addTo(layer);
@@ -440,7 +460,10 @@
 
   // OSRM toggle: rebuild the distance matrix and recompute the current route length in place.
   const sourceEl = $("osrm-source");
-  const showSource = (src) => (sourceEl.textContent = src === "OSRM" ? "· por calles" : `· ${src} (línea recta)`);
+  const showSource = (src) => {
+    road.on = src === "OSRM";
+    sourceEl.textContent = road.on ? "· por calles" : `· ${src} (línea recta)`;
+  };
   osrmBox.onchange = async () => {
     osrmBox.disabled = true;
     try {

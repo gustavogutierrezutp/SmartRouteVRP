@@ -10,7 +10,7 @@ import math
 import random
 
 from routing.geo import route_distance
-from webapp import State
+from webapp import State, engine
 
 
 class SomTrace:
@@ -105,3 +105,9 @@ def proto_som_step(count, detail=True):
             break
         _trace.step()
     return json.dumps(_trace.snapshot(detail=bool(detail)))
+
+
+def proto_route_geometry(tour_json):
+    road = State.use_osrm and State.source.startswith("OSRM")
+    path = engine.route_geometry(json.loads(tour_json), State.points, use_osrm=road)
+    return json.dumps({"path": path})
