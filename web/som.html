@@ -8,24 +8,27 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
 <link rel="stylesheet" href="style.css">
 <style>
-  #proto-banner { display: flex; flex-direction: column; gap: 2px; font-size: 13px; }
+  #proto-banner { flex: 1; display: flex; flex-direction: column; gap: 2px; font-size: 13px; }
   #proto-banner span { color: var(--muted); }
 </style>
 </head>
 <body data-proto="som">
 <!-- PROTOTYPE — throwaway page for co-author evaluation. Branch prototype/som-teaching only. -->
 <header>
-  <div id="proto-banner">
-    <b>Prototipo · Vista de enseñanza del SOM (mapa autoorganizado)</b>
-    <span>Tres variantes para evaluar: cambie entre A, B y C con la barra negra inferior o las flechas ← →.
-    ¿Cuál enseña mejor el algoritmo? ¿Qué tomaría de cada una?</span>
+  <div class="row">
+    <div id="proto-banner">
+      <b>Prototipo · Vista de enseñanza del SOM (mapa autoorganizado)</b>
+      <span>Tres variantes para evaluar: cambie entre A, B y C con la barra negra inferior o las flechas ← →.
+      ¿Cuál enseña mejor el algoritmo? ¿Qué tomaría de cada una?</span>
+    </div>
+    <label class="toggle" title="Distancias por calles (OSRM) o en línea recta (Haversine)">
+      <input type="checkbox" id="osrm" checked>
+      <span>OSRM</span>
+      <small id="osrm-source" style="font-weight:400;color:var(--muted)"></small>
+    </label>
   </div>
   <div class="row" hidden style="display:none">
     <div class="segmented" id="problem" role="radiogroup" aria-label="Problema"></div>
-    <label class="toggle">
-      <input type="checkbox" id="osrm" checked>
-      <span>OSRM</span>
-    </label>
   </div>
   <div class="row" hidden style="display:none">
     <div class="segmented" id="algorithm" role="radiogroup" aria-label="Algoritmo"></div>

@@ -14,10 +14,9 @@ from webapp import State
 
 
 class SomTrace:
-    def __init__(self, points, matrix, iterations, neuron_factor, lr0, seed):
+    def __init__(self, points, iterations, neuron_factor, lr0, seed):
         self.rng = random.Random(seed)
         self.customers = points[1:]
-        self.matrix = matrix
         self.iterations = iterations
         self.n = max(20, len(self.customers) * neuron_factor)
         self.lr0 = lr0
@@ -83,7 +82,7 @@ class SomTrace:
             "radius": radius,
             "neuron_count": self.n,
             "tour": [0] + tour + [0],
-            "tour_length": route_distance(tour, self.matrix, closed=True),
+            "tour_length": route_distance(tour, State.distance_matrix, closed=True),  # follows the OSRM toggle
             "done": self.step_index >= self.iterations,
             "last": self.last if detail else None,
         }
@@ -96,7 +95,7 @@ def proto_som_reset(iterations, neuron_factor, lr0, seed):
     global _trace
     if not State.points:
         raise RuntimeError("Primero pulse Cargar.")
-    _trace = SomTrace(State.points, State.distance_matrix, int(iterations), int(neuron_factor), float(lr0), int(seed))
+    _trace = SomTrace(State.points, int(iterations), int(neuron_factor), float(lr0), int(seed))
     return json.dumps(_trace.snapshot(detail=False))
 
 

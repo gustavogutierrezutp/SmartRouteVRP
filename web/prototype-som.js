@@ -61,6 +61,7 @@
 
   const som = {
     snap: null,
+    onRefresh: null,
     history: [],
     settings: { ...DEFAULTS },
     async reset(settings = this.settings) {
@@ -203,6 +204,7 @@
       render(som.snap);
     };
 
+    som.onRefresh = () => render(som.snap);
     som.reset().then(render);
     return () => { p.pause(); bar.remove(); hud.remove(); };
   }
@@ -243,6 +245,7 @@
     const settings = { ...som.settings };
     const log = panel.querySelector("[data-m=log]");
     const logLines = [];
+    let loggedStep = -1;
 
     panel.querySelectorAll("[data-p]").forEach((input) => {
       const k = input.dataset.p;
@@ -286,7 +289,8 @@
       const maxLen = Math.max(...som.history.map(([, v]) => v));
       chart(panel.querySelector("[data-c=len]"), [[som.history, "#34c759", maxLen * 1.05]], s.step);
 
-      if (s.last) {
+      if (s.last && s.step !== loggedStep) {
+        loggedStep = s.step;
         logLines.unshift(`#${s.step}  cliente ${s.last.target} (${s.last.target_name}) → neurona ${s.last.winner}`);
         logLines.length = Math.min(logLines.length, 200);
         log.textContent = logLines.join("\n");
@@ -302,6 +306,7 @@
       if (a === "reset") { p.pause(); logLines.length = 0; render(await som.reset({ ...settings })); }
     };
 
+    som.onRefresh = () => render(som.snap);
     som.reset({ ...settings }).then(render);
     return () => { p.pause(); panel.remove(); map.invalidateSize(); };
   }
@@ -404,6 +409,7 @@
     }
 
     panel.onclick = (e) => e.target.dataset.a && act(e.target.dataset.a);
+    som.onRefresh = render;
     som.reset().then(render);
     return () => { panel.remove(); map.invalidateSize(); };
   }
@@ -432,11 +438,31 @@
     if (e.key === "ArrowRight") show(current + 1);
   });
 
+  // OSRM toggle: rebuild the distance matrix and recompute the current route length in place.
+  const sourceEl = $("osrm-source");
+  const showSource = (src) => (sourceEl.textContent = src === "OSRM" ? "· por calles" : `· ${src} (línea recta)`);
+  osrmBox.onchange = async () => {
+    osrmBox.disabled = true;
+    try {
+      const { source } = await call("set_osrm", osrmBox.checked);
+      showSource(source);
+      if (som.snap) {
+        const keep = som.snap.last;
+        som.snap = await call("proto_som_step", 0, true);
+        som.snap.last = keep;
+        som.onRefresh?.();
+      }
+    } finally {
+      osrmBox.disabled = false;
+    }
+  };
+
   // Auto-load data once Python is ready, then mount the first variant.
   setStatus("Prototipo SOM: cargando Python…");
   worker.addEventListener("message", async ({ data }) => {
     if (data.type !== "ready") return;
     await loadBtn.onclick();
+    showSource(statusEl.textContent.split(", ").pop());
     show(current);
   });
 })();
